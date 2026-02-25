@@ -1,29 +1,29 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import connectDB from './config/db.js';
+import authRoutes from './routes/auth.js'; // <-- 1. Import the routes
 
-// Load environment variables
 dotenv.config();
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors({
-    origin: 'http://localhost:5173', // This will be your Vite React app's local URL
+    origin: 'http://localhost:5173', 
     credentials: true
 }));
-app.use(express.json()); // Allows us to parse JSON data from the frontend
+app.use(express.json());
 
-// Basic Health Check Route
+// Basic Health Check
 app.get('/api/health', (req, res) => {
-    res.status(200).json({ 
-        success: true, 
-        message: 'Connect-Music Engine is fully operational! 🚀' 
-    });
+    res.status(200).json({ success: true, message: 'Connect-Music Engine is fully operational! 🚀' });
 });
 
-// Start the server
+// Authentication Routes
+app.use('/api/auth', authRoutes); // <-- 2. Tell Express to use them
+
 app.listen(PORT, () => {
     console.log(`[Server] running successfully on http://localhost:${PORT}`);
 });
