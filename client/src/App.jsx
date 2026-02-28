@@ -1,55 +1,96 @@
-import { motion } from 'framer-motion';
-import { Music, ArrowRight } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, Outlet, Link, useNavigate } from 'react-router-dom';
 
+// Import your page components
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import Platforms from './pages/Platforms';
+import Transfer from './pages/Transfer';
+import History from './pages/History';
+
+// --- THE PERSISTENT LAYOUT ---
+// This wrapper keeps the sidebar on the screen while the right side changes smoothly.
+const MainLayout = () => {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        // Nuke the session entirely to prevent caching loops and ghost logins
+        localStorage.clear();
+        navigate('/', { replace: true });
+    };
+
+    return (
+        <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0c', color: 'white', fontFamily: "'Inter', sans-serif" }}>
+
+            {/* SIDEBAR NAVIGATION */}
+            <nav style={{ width: '250px', background: '#121212', padding: '30px 20px', borderRight: '1px solid #333', display: 'flex', flexDirection: 'column' }}>
+                <h2 style={{ color: '#1db954', marginBottom: '40px', fontSize: '24px', letterSpacing: '-0.5px' }}>
+                    🎵 ConnectMusic
+                </h2>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', flexGrow: 1 }}>
+                    <Link to="/dashboard" style={{ color: '#a0a0a0', textDecoration: 'none', fontSize: '16px', padding: '10px', borderRadius: '8px', transition: 'background 0.2s' }} onMouseOver={(e) => e.target.style.background = '#222'} onMouseOut={(e) => e.target.style.background = 'transparent'}>
+                        Dashboard
+                    </Link>
+
+                    <Link to="/platforms" style={{ color: '#a0a0a0', textDecoration: 'none', fontSize: '16px', padding: '10px', borderRadius: '8px', transition: 'background 0.2s' }} onMouseOver={(e) => e.target.style.background = '#222'} onMouseOut={(e) => e.target.style.background = 'transparent'}>
+                        Integration Hub
+                    </Link>
+
+                    <Link
+                        to="/history"
+                        style={{ color: '#a0a0a0', textDecoration: 'none', fontSize: '16px', padding: '10px', borderRadius: '8px', transition: 'background 0.2s' }}
+                        onMouseOver={(e) => e.target.style.background = '#222'}
+                        onMouseOut={(e) => e.target.style.background = 'transparent'}
+                    >
+                        Transfer History
+                    </Link>
+
+                    {/* Future Pages - Ready for when we build the actual transfer engine */}
+                    <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #333', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <Link to="/transfer" style={{ color: 'white', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', background: '#333', padding: '12px 10px', borderRadius: '8px', textAlign: 'center', transition: '0.2s' }} onMouseOver={(e) => e.target.style.background = '#444'} onMouseOut={(e) => e.target.style.background = '#333'}>
+                            + New Transfer
+                        </Link>
+                    </div>
+                </div>
+
+                <button
+                    onClick={handleLogout}
+                    style={{ background: 'transparent', color: '#ff4d4d', border: '1px solid #ff4d4d', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}
+                    onMouseOver={(e) => { e.target.style.background = '#ff4d4d'; e.target.style.color = 'black'; }}
+                    onMouseOut={(e) => { e.target.style.background = 'transparent'; e.target.style.color = '#ff4d4d'; }}
+                >
+                    Logout
+                </button>
+            </nav>
+
+            {/* DYNAMIC MAIN CONTENT AREA */}
+            <main style={{ flexGrow: 1, padding: '40px', overflowY: 'auto', height: '100vh', boxSizing: 'border-box' }}>
+                {/* The Outlet renders whatever page component matches the current URL */}
+                <Outlet />
+            </main>
+
+        </div>
+    );
+};
+
+// --- THE MASTER ROUTER ---
 function App() {
-  // This is the URL that triggers our Express backend auth route!
-  const handleSpotifyLogin = () => {
-    window.location.href = 'http://127.0.0.1:5000/api/auth/spotify';
-  };
+    return (
+        <Router>
+            <Routes>
+                {/* Public Route (The Login/Landing Page Guard) */}
+                <Route path="/" element={<Home />} />
 
-  return (
-    <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center text-white overflow-hidden relative">
-      
-      {/* Background glowing gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-green-500/20 rounded-full blur-[120px]" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-red-500/20 rounded-full blur-[120px]" />
-
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="z-10 flex flex-col items-center text-center px-4"
-      >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 150 }}
-          className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-8 border border-white/10 shadow-2xl"
-        >
-          <Music size={40} className="text-white" />
-        </motion.div>
-
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
-          Connect Your Music
-        </h1>
-        
-        <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-12 leading-relaxed">
-          Seamlessly transfer your entire music library between Spotify and YouTube in seconds. No hassle, just your favorite tracks, everywhere.
-        </p>
-
-        {/* The Login Button */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleSpotifyLogin}
-          className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#1DB954] text-black font-bold text-lg rounded-full overflow-hidden transition-all hover:bg-[#1ed760] shadow-[0_0_40px_rgba(29,185,84,0.4)]"
-        >
-          <span>Connect with Spotify</span>
-          <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-        </motion.button>
-      </motion.div>
-    </div>
-  );
+                {/* Protected Routes (Wrapped inside the Sidebar Layout) */}
+                <Route element={<MainLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/platforms" element={<Platforms />} />
+                    <Route path="/transfer" element={<Transfer />} />
+                    <Route path="/history" element={<History />} />
+                </Route>
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;
