@@ -4,6 +4,8 @@ import axios from 'axios';
 import User from '../models/User.js';
 import dotenv from 'dotenv';
 import History from '../models/History.js'; // <-- ADD THIS
+import cleanTrackData from '../utils/sanitizer.js';
+import { Parser } from 'json2csv';
 import { google } from 'googleapis';
 
 dotenv.config();
@@ -400,6 +402,100 @@ router.get('/history', async (req, res) => {
     } catch (error) {
         console.error("History Fetch Error:", error);
         res.status(500).json({ error: "Failed to fetch history." });
+    }
+});
+// --- TRANSLATION PREVIEW ENGINE ---
+router.get('/youtube/preview-clean', async (req, res) => {
+    try {
+        const { googleId, playlistId } = req.query;
+        if (!playlistId) return res.status(400).json({ error: "Missing Playlist ID" });
+
+        const user = await User.findOne({ googleId });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        oauth2Client.setCredentials({
+            access_token: user.googleAccessToken,
+            refresh_token: user.googleRefreshToken
+        });
+
+        const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+
+        // 1. Get raw tracks from YouTube
+        const response = await youtube.playlistItems.list({
+            part: 'snippet',
+            playlistId: playlistId,
+            maxResults: 50
+        });
+
+        // 2. Run them through the Sanitizer
+        const cleanedTracks = response.data.items.map(item => {
+            const rawTitle = item.snippet.title;
+            const channelName = item.snippet.videoOwnerChannelTitle || "";
+
+            // The magic happens here
+            const metadata = cleanTrackData(rawTitle, channelName);
+
+            return {
+                id: item.id,
+                originalTitle: rawTitle,
+                cleanedMetadata: metadata
+            };
+        });
+
+        res.json(cleanedTracks);
+
+    } catch (error) {
+        console.error("Preview Error:", error.message);
+        res.status(500).json({ error: "Failed to generate preview." });
+    }
+});
+
+// --- UNIVERSAL EXPORT ENGINE ---
+router.get('/youtube/export', async (req, res) => {
+    try {
+        const { googleId, playlistId } = req.query;
+
+        // 1. Verify User
+        const user = await User.findOne({ googleId });
+        if (!user) return res.status(404).send("User not found");
+
+        oauth2Client.setCredentials({
+            access_token: user.googleAccessToken,
+            refresh_token: user.googleRefreshToken
+        });
+
+        // 2. Fetch Playlist Tracks
+        const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+        const response = await youtube.playlistItems.list({
+            part: 'snippet',
+            playlistId: playlistId,
+            maxResults: 50 // In production, you'd loop for more
+        });
+
+        // 3. Clean and Format Data
+        const cleanTracks = response.data.items.map(item => {
+            const { artist, track } = cleanTrackData(item.snippet.title, item.snippet.videoOwnerChannelTitle);
+            return {
+                Title: track,
+                Artist: artist,
+                Album: "Unknown (YouTube Export)",
+                Original_Source: "YouTube Music"
+            };
+        });
+
+        // 4. Generate CSV File
+        const fields = ['Title', 'Artist', 'Album', 'Original_Source'];
+        const json2csvParser = new Parser({ fields });
+        const csv = json2csvParser.parse(cleanTracks);
+
+        // 5. Send File to Browser
+        res.header('Content-Type', 'text/csv');
+        res.attachment(`playlist_export.csv`);
+        return res.send(csv);
+
+    } catch (error) {
+        console.error("Export Error:", error);
+        res.status(500).send("Export failed");
     }
 });
 export default router;
