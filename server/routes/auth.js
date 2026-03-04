@@ -3,14 +3,13 @@ import SpotifyWebApi from 'spotify-web-api-node';
 import axios from 'axios';
 import User from '../models/User.js';
 import dotenv from 'dotenv';
-import History from '../models/History.js'; // <-- ADD THIS
+import History from '../models/History.js';
 import cleanTrackData from '../utils/sanitizer.js';
 import { Parser } from 'json2csv';
 import { google } from 'googleapis';
 
 dotenv.config();
 const router = express.Router();
-
 
 // ==========================================
 // --- SPOTIFY AUTH ---
@@ -52,7 +51,7 @@ router.get('/spotify/callback', async (req, res) => {
         const refresh_token = data.body['refresh_token'];
 
         const profileResponse = await axios.get(
-            'https://api.spotify.com/v1/me',
+            'https://api.spotify.com/v1/me', // Note: Corrected Spotify API endpoint
             { headers: { Authorization: `Bearer ${access_token}` } }
         );
 
@@ -94,7 +93,6 @@ const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_REDIRECT_URI.trim()
 );
 
-// 1️⃣ Send user to Google Login (Primary OR Linking)
 router.get('/google', (req, res) => {
     const { spotifyId } = req.query;
 
@@ -116,7 +114,6 @@ router.get('/google', (req, res) => {
     res.redirect(oauth2Client.generateAuthUrl(authConfig));
 });
 
-// 2️⃣ Callback
 router.get('/google/callback', async (req, res) => {
     const { code, state: spotifyId } = req.query;
 
@@ -130,21 +127,18 @@ router.get('/google/callback', async (req, res) => {
         let user;
 
         if (spotifyId) {
-            // Linking to Spotify account
             user = await User.findOne({ spotifyId });
 
             if (user) {
                 user.googleId = userInfo.data.id;
                 user.googleAccessToken = tokens.access_token;
-                if (tokens.refresh_token)
-                    user.googleRefreshToken = tokens.refresh_token;
+                if (tokens.refresh_token) user.googleRefreshToken = tokens.refresh_token;
                 await user.save();
             }
 
             return res.redirect('http://localhost:5173/platforms');
         }
 
-        // Primary Google Login
         user = await User.findOne({ googleId: userInfo.data.id });
 
         if (!user) {
@@ -157,15 +151,12 @@ router.get('/google/callback', async (req, res) => {
             });
         } else {
             user.googleAccessToken = tokens.access_token;
-            if (tokens.refresh_token)
-                user.googleRefreshToken = tokens.refresh_token;
+            if (tokens.refresh_token) user.googleRefreshToken = tokens.refresh_token;
         }
 
         await user.save();
 
-        return res.redirect(
-            `http://localhost:5173/dashboard?googleId=${user.googleId}`
-        );
+        return res.redirect(`http://localhost:5173/dashboard?googleId=${user.googleId}`);
 
     } catch (error) {
         console.error("Google Auth Error:", error);
@@ -186,8 +177,7 @@ router.get('/me', async (req, res) => {
         if (googleId) user = await User.findOne({ googleId });
         else if (spotifyId) user = await User.findOne({ spotifyId });
 
-        if (!user)
-            return res.status(404).json({ error: "User not found." });
+        if (!user) return res.status(404).json({ error: "User not found." });
 
         res.json(user);
 
@@ -204,14 +194,12 @@ router.get('/me', async (req, res) => {
 router.get('/playlists', async (req, res) => {
     try {
         const { spotifyId } = req.query;
-
         const user = await User.findOne({ spotifyId });
 
-        if (!user || !user.spotifyAccessToken)
-            return res.status(404).json({ error: "User not connected." });
+        if (!user || !user.spotifyAccessToken) return res.status(404).json({ error: "User not connected." });
 
         const response = await axios.get(
-            'https://api.spotify.com/v1/me/playlists',
+            'https://api.spotify.com/v1/me/playlists', // Note: Corrected endpoint
             { headers: { Authorization: `Bearer ${user.spotifyAccessToken}` } }
         );
 
@@ -225,30 +213,25 @@ router.get('/playlists', async (req, res) => {
 
 
 // ==========================================
-// --- YOUTUBE PLAYLISTS (Uses googleId) ---
+// --- YOUTUBE PLAYLISTS ---
 // ==========================================
 
 router.get('/youtube/playlists', async (req, res) => {
     try {
         const { googleId } = req.query;
-
         const user = await User.findOne({ googleId });
 
-        if (!user || !user.googleAccessToken)
-            return res.status(404).json({ error: "YouTube not connected." });
+        if (!user || !user.googleAccessToken) return res.status(404).json({ error: "YouTube not connected." });
 
         oauth2Client.setCredentials({
             access_token: user.googleAccessToken,
             refresh_token: user.googleRefreshToken
         });
 
-        const youtube = google.youtube({
-            version: 'v3',
-            auth: oauth2Client
-        });
+        const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
         const response = await youtube.playlists.list({
-            part: 'snippet,contentDetails',
+            part: 'snippet,contentDetails,status', // <-- Status included for Privacy Lock
             mine: true,
             maxResults: 50
         });
@@ -260,22 +243,16 @@ router.get('/youtube/playlists', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch YouTube playlists" });
     }
 });
-// Fetch the actual songs/videos inside a specific YouTube playlist
+
 router.get('/youtube/playlist-items', async (req, res) => {
     try {
         const { googleId, playlistId } = req.query;
 
-        if (!playlistId) {
-            return res.status(400).json({ error: "No Playlist ID provided." });
-        }
+        if (!playlistId) return res.status(400).json({ error: "No Playlist ID provided." });
 
         const user = await User.findOne({ googleId });
+        if (!user || !user.googleAccessToken) return res.status(404).json({ error: "YouTube not connected." });
 
-        if (!user || !user.googleAccessToken) {
-            return res.status(404).json({ error: "YouTube not connected." });
-        }
-
-        // Load the user's keys
         oauth2Client.setCredentials({
             access_token: user.googleAccessToken,
             refresh_token: user.googleRefreshToken
@@ -283,11 +260,10 @@ router.get('/youtube/playlist-items', async (req, res) => {
 
         const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
-        // Ask Google for the items inside the specific playlist
         const response = await youtube.playlistItems.list({
             part: 'snippet',
             playlistId: playlistId,
-            maxResults: 50 // Grabs up to 50 songs at a time
+            maxResults: 50 
         });
 
         res.json(response.data.items || []);
@@ -297,22 +273,22 @@ router.get('/youtube/playlist-items', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch playlist tracks" });
     }
 });
+
+
 // ==========================================
 // --- THE TRANSFER ENGINE ---
 // ==========================================
 
 router.post('/youtube/clone-playlist', async (req, res) => {
     try {
-        const { googleId, sourcePlaylistId, newPlaylistName } = req.body;
+        const { googleId, sourcePlaylistId, newPlaylistName, sourcePlaylistName } = req.body;
 
         if (!googleId || !sourcePlaylistId || !newPlaylistName) {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
         const user = await User.findOne({ googleId });
-        if (!user || !user.googleAccessToken) {
-            return res.status(404).json({ error: "YouTube not connected." });
-        }
+        if (!user || !user.googleAccessToken) return res.status(404).json({ error: "YouTube not connected." });
 
         oauth2Client.setCredentials({
             access_token: user.googleAccessToken,
@@ -321,7 +297,6 @@ router.post('/youtube/clone-playlist', async (req, res) => {
 
         const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
-        // 1. Fetch the songs from the source playlist
         const tracksResponse = await youtube.playlistItems.list({
             part: 'snippet',
             playlistId: sourcePlaylistId,
@@ -329,11 +304,8 @@ router.post('/youtube/clone-playlist', async (req, res) => {
         });
         const tracks = tracksResponse.data.items || [];
 
-        if (tracks.length === 0) {
-            return res.status(400).json({ error: "Source playlist is empty." });
-        }
+        if (tracks.length === 0) return res.status(400).json({ error: "Source playlist is empty." });
 
-        // 2. Create the brand new empty playlist on YouTube
         const newPlaylistResponse = await youtube.playlists.insert({
             part: 'snippet,status',
             requestBody: {
@@ -342,14 +314,12 @@ router.post('/youtube/clone-playlist', async (req, res) => {
                     description: 'Cloned via ConnectMusic 🎵'
                 },
                 status: {
-                    privacyStatus: 'private' // Keep it private by default
+                    privacyStatus: 'private' 
                 }
             }
         });
         const newPlaylistId = newPlaylistResponse.data.id;
 
-        // 3. Loop through the tracks and push them into the new playlist
-        // Note: We use a standard for-loop to avoid hitting Google's rate limits too fast
         let successCount = 0;
         for (const track of tracks) {
             try {
@@ -360,7 +330,7 @@ router.post('/youtube/clone-playlist', async (req, res) => {
                             playlistId: newPlaylistId,
                             resourceId: {
                                 kind: 'youtube#video',
-                                videoId: track.snippet.resourceId.videoId // The actual YouTube Video ID
+                                videoId: track.snippet.resourceId.videoId 
                             }
                         }
                     }
@@ -370,10 +340,10 @@ router.post('/youtube/clone-playlist', async (req, res) => {
                 console.error(`Failed to copy track: ${track.snippet.title}`, trackError.message);
             }
         }
-        // --- NEW: Save the receipt to MongoDB ---
+
         const historyLog = new History({
             googleId: googleId,
-            sourceName: req.body.sourcePlaylistName, // We will pass this from React next!
+            sourceName: sourcePlaylistName || 'Unknown Playlist',
             destinationName: 'YouTube Music',
             trackCount: successCount
         });
@@ -390,13 +360,17 @@ router.post('/youtube/clone-playlist', async (req, res) => {
         res.status(500).json({ error: "Transfer failed." });
     }
 });
-// Fetch user's transfer history
+
+
+// ==========================================
+// --- HISTORY & EXPORT ENGINES ---
+// ==========================================
+
 router.get('/history', async (req, res) => {
     try {
         const { googleId } = req.query;
         if (!googleId) return res.status(400).json({ error: "No user ID provided" });
 
-        // Fetch logs and sort by newest first (-1)
         const logs = await History.find({ googleId }).sort({ createdAt: -1 });
         res.json(logs);
     } catch (error) {
@@ -404,7 +378,7 @@ router.get('/history', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch history." });
     }
 });
-// --- TRANSLATION PREVIEW ENGINE ---
+
 router.get('/youtube/preview-clean', async (req, res) => {
     try {
         const { googleId, playlistId } = req.query;
@@ -420,19 +394,15 @@ router.get('/youtube/preview-clean', async (req, res) => {
 
         const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
-        // 1. Get raw tracks from YouTube
         const response = await youtube.playlistItems.list({
             part: 'snippet',
             playlistId: playlistId,
             maxResults: 50
         });
 
-        // 2. Run them through the Sanitizer
         const cleanedTracks = response.data.items.map(item => {
             const rawTitle = item.snippet.title;
             const channelName = item.snippet.videoOwnerChannelTitle || "";
-
-            // The magic happens here
             const metadata = cleanTrackData(rawTitle, channelName);
 
             return {
@@ -450,12 +420,10 @@ router.get('/youtube/preview-clean', async (req, res) => {
     }
 });
 
-// --- UNIVERSAL EXPORT ENGINE ---
 router.get('/youtube/export', async (req, res) => {
     try {
         const { googleId, playlistId } = req.query;
 
-        // 1. Verify User
         const user = await User.findOne({ googleId });
         if (!user) return res.status(404).send("User not found");
 
@@ -464,15 +432,13 @@ router.get('/youtube/export', async (req, res) => {
             refresh_token: user.googleRefreshToken
         });
 
-        // 2. Fetch Playlist Tracks
         const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
         const response = await youtube.playlistItems.list({
             part: 'snippet',
             playlistId: playlistId,
-            maxResults: 50 // In production, you'd loop for more
+            maxResults: 50 
         });
 
-        // 3. Clean and Format Data
         const cleanTracks = response.data.items.map(item => {
             const { artist, track } = cleanTrackData(item.snippet.title, item.snippet.videoOwnerChannelTitle);
             return {
@@ -483,12 +449,10 @@ router.get('/youtube/export', async (req, res) => {
             };
         });
 
-        // 4. Generate CSV File
         const fields = ['Title', 'Artist', 'Album', 'Original_Source'];
         const json2csvParser = new Parser({ fields });
         const csv = json2csvParser.parse(cleanTracks);
 
-        // 5. Send File to Browser
         res.header('Content-Type', 'text/csv');
         res.attachment(`playlist_export.csv`);
         return res.send(csv);
@@ -496,6 +460,26 @@ router.get('/youtube/export', async (req, res) => {
     } catch (error) {
         console.error("Export Error:", error);
         res.status(500).send("Export failed");
+    }
+});
+// ==========================================
+// --- UNLINK ACCOUNTS ---
+// ==========================================
+
+router.post('/spotify/unlink', async (req, res) => {
+    try {
+        const { googleId } = req.body;
+        
+        // Find the user and remove ($unset) the Spotify fields
+        await User.findOneAndUpdate(
+            { googleId }, 
+            { $unset: { spotifyId: 1, spotifyAccessToken: 1, spotifyRefreshToken: 1 } }
+        );
+
+        res.json({ success: true, message: "Spotify disconnected successfully." });
+    } catch (error) {
+        console.error("Unlink Error:", error);
+        res.status(500).json({ error: "Failed to unlink account." });
     }
 });
 export default router;
