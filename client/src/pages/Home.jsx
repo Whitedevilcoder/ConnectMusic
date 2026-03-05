@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { FaGoogle, FaFileCsv, FaShieldAlt, FaBolt, FaArrowRight } from 'react-icons/fa'; // Added ArrowRight
+import { FaGoogle, FaFileCsv, FaShieldAlt, FaBolt, FaArrowRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 // --- COMPONENT: 3D TILT CARD (Unchanged) ---
@@ -78,7 +78,8 @@ const Home = () => {
     };
 
     const handleLogin = () => {
-        window.location.href = 'http://localhost:5000/api/auth/google';
+        // PRODUCTION URL UPDATE: Uses Render backend instead of localhost
+        window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
     };
 
     return (
