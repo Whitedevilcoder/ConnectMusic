@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { FaGoogle, FaFileCsv, FaShieldAlt, FaBolt, FaArrowRight } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 
