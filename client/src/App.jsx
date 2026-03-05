@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import Platforms from './pages/Platforms';
 import Transfer from './pages/Transfer';
 import History from './pages/History';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 import { MusicProvider } from './context/MusicContext';
 // Import the New Layout
 import CyberLayout from './components/CyberLayout';
@@ -29,6 +31,9 @@ function App() {
 
         {/* THE ROUTER - No extra divs or sidebars here! */}
         <Routes>
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+
           {/* Public Home Page */}
           <Route path="/" element={<Home />} />
 
