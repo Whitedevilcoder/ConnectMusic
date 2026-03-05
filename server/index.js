@@ -11,7 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: 'https://connectmusic-bay.vercel.app', 
+    origin: 'https://connectmusic-app.vercel.app', 
     credentials: true
 }));
 app.use(express.json());
