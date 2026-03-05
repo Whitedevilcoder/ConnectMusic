@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { FaGoogle, FaFileCsv, FaShieldAlt, FaBolt, FaArrowRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 // --- COMPONENT: 3D TILT CARD (Unchanged) ---
 const TiltCard = ({ icon, title, desc, color }) => {
@@ -100,6 +101,7 @@ const Home = () => {
 
             {/* NAVBAR */}
             <nav className="relative z-10 flex justify-between items-center px-10 py-6 max-w-7xl mx-auto">
+                <Logo size={35} />
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-[#FF0000] rounded-full animate-pulse" />
                     <span className="font-bold text-xl tracking-tight">ConnectMusic</span>

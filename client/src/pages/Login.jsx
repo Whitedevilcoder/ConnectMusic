@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaYoutube, FaSpotify, FaMusic, FaArrowRight } from 'react-icons/fa';
 import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import Logo from '../components/Logo';
 
 // --- SUB-COMPONENT: FLOATING BACKGROUND NOTES ---
 const FloatingNotes = () => {
@@ -31,7 +32,7 @@ const Login = () => {
         const error = searchParams.get('error');
         if (error === 'auth_failed') {
             toast.error("Authentication failed or was canceled. Please try again.");
-            
+
             // Clean the URL so the toast doesn't trigger again if they refresh
             window.history.replaceState({}, document.title, "/");
         }
@@ -55,14 +56,14 @@ const Login = () => {
 
     return (
         <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', color: 'white', fontFamily: "'Inter', sans-serif" }}>
-            
+
             {/* 1. LIQUID AURORA BACKGROUND */}
-            <motion.div 
+            <motion.div
                 variants={bgVariants} animate="animate"
-                style={{ 
-                    position: 'absolute', inset: 0, zIndex: 0, opacity: 0.25, 
-                    background: 'linear-gradient(-45deg, #FF0000, #2b00ff, #00C9FF, #FF00E6)', 
-                    backgroundSize: '400% 400%', filter: 'blur(100px)' 
+                style={{
+                    position: 'absolute', inset: 0, zIndex: 0, opacity: 0.25,
+                    background: 'linear-gradient(-45deg, #FF0000, #2b00ff, #00C9FF, #FF00E6)',
+                    backgroundSize: '400% 400%', filter: 'blur(100px)'
                 }}
             />
 
@@ -70,24 +71,27 @@ const Login = () => {
             <FloatingNotes />
 
             {/* 3. GLASSMORPHIC LOGIN CARD */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
-                style={{ 
-                    position: 'relative', zIndex: 10, width: '100%', maxWidth: '420px', 
-                    background: 'rgba(10, 10, 10, 0.6)', backdropFilter: 'blur(30px)', 
-                    border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '24px', 
-                    padding: '50px 40px', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)' 
+                style={{
+                    position: 'relative', zIndex: 10, width: '100%', maxWidth: '420px',
+                    background: 'rgba(10, 10, 10, 0.6)', backdropFilter: 'blur(30px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '24px',
+                    padding: '50px 40px', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)'
                 }}
             >
                 {/* Glowing Logo Node */}
-                <motion.div 
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                    <Logo size={50} />
+                </div>
+                <motion.div
                     initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.3 }}
-                    style={{ 
-                        width: '60px', height: '60px', margin: '0 auto 25px', background: 'rgba(255,0,0,0.05)', 
-                        border: '1px solid rgba(255,0,0,0.3)', borderRadius: '16px', display: 'flex', 
-                        alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(255,0,0,0.2)' 
+                    style={{
+                        width: '60px', height: '60px', margin: '0 auto 25px', background: 'rgba(255,0,0,0.05)',
+                        border: '1px solid rgba(255,0,0,0.3)', borderRadius: '16px', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(255,0,0,0.2)'
                     }}
                 >
                     <div style={{ width: '15px', height: '15px', background: '#FF0000', borderRadius: '50%', boxShadow: '0 0 15px #FF0000, 0 0 30px #FF0000' }}></div>
@@ -99,14 +103,14 @@ const Login = () => {
                 </p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    
+
                     {/* PRIMARY ACTION: YOUTUBE */}
-                    <motion.button 
+                    <motion.button
                         whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,0,0,0.15)' }} whileTap={{ scale: 0.98 }}
                         onClick={handleGoogleLogin}
-                        style={{ 
-                            width: '100%', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,0,0,0.4)', 
-                            background: 'rgba(255,0,0,0.05)', color: 'white', fontSize: '16px', fontWeight: 'bold', 
+                        style={{
+                            width: '100%', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,0,0,0.4)',
+                            background: 'rgba(255,0,0,0.05)', color: 'white', fontSize: '16px', fontWeight: 'bold',
                             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
                             transition: 'background-color 0.2s, box-shadow 0.2s', boxShadow: '0 0 20px rgba(255,0,0,0.1)'
                         }}
@@ -117,12 +121,12 @@ const Login = () => {
                     </motion.button>
 
                     {/* SECONDARY ACTION: SPOTIFY */}
-                    <motion.button 
+                    <motion.button
                         whileHover={{ scale: 1.02, backgroundColor: 'rgba(29, 185, 84, 0.15)' }} whileTap={{ scale: 0.98 }}
                         onClick={handleSpotifyLogin}
-                        style={{ 
-                            width: '100%', padding: '16px', borderRadius: '14px', border: '1px solid rgba(29, 185, 84, 0.3)', 
-                            background: 'rgba(29, 185, 84, 0.05)', color: 'white', fontSize: '16px', fontWeight: 'bold', 
+                        style={{
+                            width: '100%', padding: '16px', borderRadius: '14px', border: '1px solid rgba(29, 185, 84, 0.3)',
+                            background: 'rgba(29, 185, 84, 0.05)', color: 'white', fontSize: '16px', fontWeight: 'bold',
                             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
                             transition: 'background-color 0.2s'
                         }}
@@ -133,10 +137,10 @@ const Login = () => {
                 </div>
 
                 {/* Microcopy / Features */}
-                <div style={{ 
-                    marginTop: '35px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)', 
-                    display: 'flex', justifyContent: 'space-around', fontSize: '11px', color: '#666', 
-                    fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase' 
+                <div style={{
+                    marginTop: '35px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)',
+                    display: 'flex', justifyContent: 'space-around', fontSize: '11px', color: '#666',
+                    fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase'
                 }}>
                     <span>Secure OAuth</span>
                     <span>•</span>
