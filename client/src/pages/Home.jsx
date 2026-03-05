@@ -103,8 +103,8 @@ const Home = () => {
             <nav className="relative z-10 flex justify-between items-center px-10 py-6 max-w-7xl mx-auto">
                 <Logo size={35} />
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-[#FF0000] rounded-full animate-pulse" />
-                    <span className="font-bold text-xl tracking-tight">ConnectMusic</span>
+                    {/* <div className="w-3 h-3 bg-[#FF0000] rounded-full animate-pulse" /> */}
+                    {/* <span className="font-bold text-xl tracking-tight">ConnectMusic</span> */}
                 </div>
                 
                 {/* DYNAMIC NAVBAR BUTTON */}
