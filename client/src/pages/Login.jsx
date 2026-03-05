@@ -86,7 +86,7 @@ const Login = () => {
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
                     <Logo size={50} />
                 </div>
-                {/* <motion.div
+                <motion.div
                     initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.3 }}
                     style={{
                         width: '60px', height: '60px', margin: '0 auto 25px', background: 'rgba(255,0,0,0.05)',
@@ -95,7 +95,7 @@ const Login = () => {
                     }}
                 >
                     <div style={{ width: '15px', height: '15px', background: '#FF0000', borderRadius: '50%', boxShadow: '0 0 15px #FF0000, 0 0 30px #FF0000' }}></div>
-                </motion.div> */}
+                </motion.div>
 
                 <h1 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '10px', letterSpacing: '-1px' }}>ConnectMusic</h1>
                 <p style={{ color: '#888', marginBottom: '40px', fontSize: '14px', lineHeight: '1.6' }}>
