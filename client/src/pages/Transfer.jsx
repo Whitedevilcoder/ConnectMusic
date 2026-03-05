@@ -53,7 +53,7 @@ const Transfer = () => {
                 link.parentNode.removeChild(link);
                 toast.success("Download Complete!", { id: toastId });
             } else {
-                await axios.post('${import.meta.env.VITE_API_URL}/api/auth/youtube/clone-playlist', {
+                await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/youtube/clone-playlist`, {
                     googleId: activeGoogleId,
                     sourcePlaylistId: selectedSource.id,
                     sourcePlaylistName: selectedSource.snippet.title,
