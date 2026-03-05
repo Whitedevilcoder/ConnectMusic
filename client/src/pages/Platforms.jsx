@@ -18,7 +18,7 @@ const Platforms = () => {
             if (activeGoogleId) {
                 setIsYouTubeConnected(true);
                 try {
-                    const res = await axios.get(`http://localhost:5000/api/auth/me?googleId=${activeGoogleId}`);
+                    const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me?googleId=${activeGoogleId}`);
                     setUser(res.data);
                     
                     if (res.data.spotifyId) {
@@ -98,7 +98,7 @@ const Platforms = () => {
                 const toastId = toast.loading("Disconnecting Spotify...");
                 
                 try {
-                    await axios.post('http://localhost:5000/api/auth/spotify/unlink', { googleId: activeGoogleId });
+                    await axios.post('${import.meta.env.VITE_API_URL}/api/auth/spotify/unlink', { googleId: activeGoogleId });
                     setIsSpotifyConnected(false); // Update UI instantly
                     toast.success("Spotify disconnected.", { id: toastId });
                 } catch (error) {

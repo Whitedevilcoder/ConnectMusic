@@ -24,6 +24,7 @@ app.get('/api/health', (req, res) => {
 // Authentication Routes
 app.use('/api/auth', authRoutes); // <-- 2. Tell Express to use them
 
+
 app.listen(PORT, () => {
-    console.log(`[Server] running successfully on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

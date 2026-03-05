@@ -103,7 +103,7 @@ const History = () => {
             if (!googleId) return;
 
             try {
-                const res = await axios.get(`http://localhost:5000/api/auth/history?googleId=${googleId}`);
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/history?googleId=${googleId}`);
                 setHistoryLogs(res.data);
             } catch (error) {
                 console.error("Failed to load history", error);

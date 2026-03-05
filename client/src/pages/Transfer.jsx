@@ -27,7 +27,7 @@ const Transfer = () => {
         const activeGoogleId = localStorage.getItem('googleId');
         if (!activeGoogleId) navigate('/');
         
-        axios.get(`http://localhost:5000/api/auth/youtube/playlists?googleId=${activeGoogleId}`)
+        axios.get(`${import.meta.env.VITE_API_URL}/api/auth/youtube/playlists?googleId=${activeGoogleId}`)
             .then(res => setPlaylists(res.data))
             .catch(err => console.error(err));
     }, [location, navigate]);
@@ -40,7 +40,7 @@ const Transfer = () => {
 
         try {
             if (selectedDestination === 'file') {
-                const response = await axios.get(`http://localhost:5000/api/auth/youtube/export`, {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/youtube/export`, {
                     params: { googleId: activeGoogleId, playlistId: selectedSource.id, format: 'csv' },
                     responseType: 'blob'
                 });
@@ -53,7 +53,7 @@ const Transfer = () => {
                 link.parentNode.removeChild(link);
                 toast.success("Download Complete!", { id: toastId });
             } else {
-                await axios.post('http://localhost:5000/api/auth/youtube/clone-playlist', {
+                await axios.post('${import.meta.env.VITE_API_URL}/api/auth/youtube/clone-playlist', {
                     googleId: activeGoogleId,
                     sourcePlaylistId: selectedSource.id,
                     sourcePlaylistName: selectedSource.snippet.title,

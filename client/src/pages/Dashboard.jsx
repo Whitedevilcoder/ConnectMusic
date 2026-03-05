@@ -34,10 +34,10 @@ const Dashboard = () => {
 
         const fetchData = async () => {
             try {
-                const userRes = await axios.get(`http://localhost:5000/api/auth/me?googleId=${activeGoogleId}`);
+                const userRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me?googleId=${activeGoogleId}`);
                 setUser(userRes.data);
                 
-                const ytRes = await axios.get(`http://localhost:5000/api/auth/youtube/playlists?googleId=${activeGoogleId}`);
+                const ytRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/youtube/playlists?googleId=${activeGoogleId}`);
                 setYtPlaylists(ytRes.data);
                 
                 setLoading(false);
