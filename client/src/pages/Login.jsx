@@ -38,8 +38,8 @@ const Login = () => {
     }, [searchParams]);
 
     const handleGoogleLogin = () => {
-        // Using your secure ngrok URL
-        window.location.href = 'https://overthin-controvertibly-buster.ngrok-free.dev/api/auth/google';
+        // PRODUCTION URL UPDATE
+        window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
     };
 
     const handleSpotifyLogin = () => {

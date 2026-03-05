@@ -34,7 +34,7 @@ const Platforms = () => {
         checkConnections();
     }, []);
 
-    // --- CUSTOM CONFIRMATION TOAST (Replaces window.confirm) ---
+    // --- CUSTOM CONFIRMATION TOAST ---
     const customConfirm = (message, onConfirm) => {
         toast((t) => (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', padding: '5px' }}>
@@ -60,14 +60,13 @@ const Platforms = () => {
                 </div>
             </div>
         ), { 
-            duration: Infinity, // Stays open until they click a button
-            style: { border: '1px solid rgba(255,0,0,0.3)', background: 'rgba(20,0,0,0.9)' } // Danger styling
+            duration: Infinity, 
+            style: { border: '1px solid rgba(255,0,0,0.3)', background: 'rgba(20,0,0,0.9)' } 
         });
     };
 
     // --- CONNECTION HANDLERS ---
     const handleSpotifyConnect = () => {
-        // Replaces the ugly browser alert()
         toast("Spotify linking is temporarily disabled while we build the YouTube engine.", {
             icon: '🚧',
             style: { border: '1px solid #eab308', color: '#eab308', background: 'rgba(20,20,0,0.9)' }
@@ -75,7 +74,8 @@ const Platforms = () => {
     };
 
     const handleYouTubeConnect = () => {
-        window.location.href = 'https://overthin-controvertibly-buster.ngrok-free.dev/api/auth/google';
+        // PRODUCTION URL UPDATE
+        window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
     };
 
     // --- DISCONNECT HANDLERS ---
@@ -98,8 +98,9 @@ const Platforms = () => {
                 const toastId = toast.loading("Disconnecting Spotify...");
                 
                 try {
-                    await axios.post('${import.meta.env.VITE_API_URL}/api/auth/spotify/unlink', { googleId: activeGoogleId });
-                    setIsSpotifyConnected(false); // Update UI instantly
+                    // FIXED BACKTICKS FOR STRING INTERPOLATION
+                    await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/spotify/unlink`, { googleId: activeGoogleId });
+                    setIsSpotifyConnected(false);
                     toast.success("Spotify disconnected.", { id: toastId });
                 } catch (error) {
                     toast.error("Failed to disconnect.", { id: toastId });

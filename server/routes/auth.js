@@ -51,7 +51,7 @@ router.get('/spotify/callback', async (req, res) => {
         const refresh_token = data.body['refresh_token'];
 
         const profileResponse = await axios.get(
-            'https://api.spotify.com/v1/me', // Note: Corrected Spotify API endpoint
+            'https://api.spotify.com/v1/me', 
             { headers: { Authorization: `Bearer ${access_token}` } }
         );
 
@@ -74,7 +74,8 @@ router.get('/spotify/callback', async (req, res) => {
 
         await user.save();
 
-        res.redirect(`http://localhost:5173/dashboard?spotifyId=${user.spotifyId}`);
+        // UPDATED FOR PRODUCTION
+        res.redirect(`https://connectmusic-bay.vercel.app/dashboard?spotifyId=${user.spotifyId}`);
 
     } catch (error) {
         console.error("SPOTIFY AUTH ERROR:", error.response?.data || error.message);
@@ -136,7 +137,8 @@ router.get('/google/callback', async (req, res) => {
                 await user.save();
             }
 
-            return res.redirect('http://localhost:5173/platforms');
+            // UPDATED FOR PRODUCTION
+            return res.redirect('https://connectmusic-bay.vercel.app/platforms');
         }
 
         user = await User.findOne({ googleId: userInfo.data.id });
@@ -156,11 +158,13 @@ router.get('/google/callback', async (req, res) => {
 
         await user.save();
 
-        return res.redirect(`http://localhost:5173/dashboard?googleId=${user.googleId}`);
+        // UPDATED FOR PRODUCTION
+        return res.redirect(`https://connectmusic-bay.vercel.app/dashboard?googleId=${user.googleId}`);
 
     } catch (error) {
         console.error("Google Auth Error:", error);
-        res.redirect('http://localhost:5173/?error=auth_failed');
+        // UPDATED FOR PRODUCTION
+        res.redirect('https://connectmusic-bay.vercel.app/?error=auth_failed');
     }
 });
 
@@ -199,7 +203,7 @@ router.get('/playlists', async (req, res) => {
         if (!user || !user.spotifyAccessToken) return res.status(404).json({ error: "User not connected." });
 
         const response = await axios.get(
-            'https://api.spotify.com/v1/me/playlists', // Note: Corrected endpoint
+            'https://api.spotify.com/v1/me/playlists', 
             { headers: { Authorization: `Bearer ${user.spotifyAccessToken}` } }
         );
 
@@ -231,7 +235,7 @@ router.get('/youtube/playlists', async (req, res) => {
         const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
         const response = await youtube.playlists.list({
-            part: 'snippet,contentDetails,status', // <-- Status included for Privacy Lock
+            part: 'snippet,contentDetails,status', 
             mine: true,
             maxResults: 50
         });
@@ -462,6 +466,7 @@ router.get('/youtube/export', async (req, res) => {
         res.status(500).send("Export failed");
     }
 });
+
 // ==========================================
 // --- UNLINK ACCOUNTS ---
 // ==========================================
@@ -470,7 +475,6 @@ router.post('/spotify/unlink', async (req, res) => {
     try {
         const { googleId } = req.body;
         
-        // Find the user and remove ($unset) the Spotify fields
         await User.findOneAndUpdate(
             { googleId }, 
             { $unset: { spotifyId: 1, spotifyAccessToken: 1, spotifyRefreshToken: 1 } }
@@ -482,4 +486,5 @@ router.post('/spotify/unlink', async (req, res) => {
         res.status(500).json({ error: "Failed to unlink account." });
     }
 });
+
 export default router;
