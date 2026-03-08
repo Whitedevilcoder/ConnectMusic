@@ -67,7 +67,7 @@ const Platforms = () => {
 
     // --- CONNECTION HANDLERS ---
     const handleSpotifyConnect = () => {
-        toast("Spotify linking is temporarily disabled while we build the YouTube engine.", {
+        toast("Spotify linking is temporarily disabled while we build the YouTube engine. It will be enabled in next production features", {
             icon: '🚧',
             style: { border: '1px solid #eab308', color: '#eab308', background: 'rgba(20,20,0,0.9)' }
         });
