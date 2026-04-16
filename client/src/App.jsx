@@ -8,14 +8,22 @@ import Transfer from './pages/Transfer';
 import History from './pages/History';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import Maintenance from './pages/Maintenance'; // <-- 1. IMPORTED MAINTENANCE
 import { MusicProvider } from './context/MusicContext';
 // Import the New Layout
 import CyberLayout from './components/CyberLayout';
 
 function App() {
+  // --- 2. MAINTENANCE MODE SWITCH ---
+  // If VITE_MAINTENANCE_MODE is set to 'true', lock the app down.
+  const isMaintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
+
+  if (isMaintenanceMode) {
+    return <Maintenance />;
+  }
+
   return (
     <MusicProvider>
-
       <Router>
         {/* Toast Notifications stay on top */}
         <Toaster
@@ -49,7 +57,6 @@ function App() {
       </Router>
     </MusicProvider>
   );
-
 }
 
 export default App;
