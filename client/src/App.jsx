@@ -8,6 +8,7 @@ import Transfer from './pages/Transfer';
 import History from './pages/History';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import Player from './pages/Player'; 
 import Maintenance from './pages/Maintenance'; // <-- 1. IMPORTED MAINTENANCE
 import { MusicProvider } from './context/MusicContext';
 // Import the New Layout
@@ -50,6 +51,9 @@ function App() {
           <Route path="/platforms" element={<CyberLayout><Platforms /></CyberLayout>} />
           <Route path="/transfer" element={<CyberLayout><Transfer /></CyberLayout>} />
           <Route path="/history" element={<CyberLayout><History /></CyberLayout>} />
+
+          {/* NEW THEATER MODE ROUTE */}
+          <Route path="/player/:id" element={<CyberLayout><Player /></CyberLayout>} />
 
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />

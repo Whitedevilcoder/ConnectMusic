@@ -74,8 +74,8 @@ router.get('/spotify/callback', async (req, res) => {
 
         await user.save();
 
-        // UPDATED FOR PRODUCTION
-        res.redirect(`https://connectmusic-app.vercel.app/dashboard?spotifyId=${user.spotifyId}`);
+        // DYNAMIC REDIRECT
+        res.redirect(`${process.env.CLIENT_URL}/dashboard?spotifyId=${user.spotifyId}`);
 
     } catch (error) {
         console.error("SPOTIFY AUTH ERROR:", error.response?.data || error.message);
@@ -137,8 +137,8 @@ router.get('/google/callback', async (req, res) => {
                 await user.save();
             }
 
-            // UPDATED FOR PRODUCTION
-            return res.redirect('https://connectmusic-app.vercel.app/platforms');
+            // DYNAMIC REDIRECT
+            return res.redirect(`${process.env.CLIENT_URL}/platforms`);
         }
 
         user = await User.findOne({ googleId: userInfo.data.id });
@@ -158,13 +158,13 @@ router.get('/google/callback', async (req, res) => {
 
         await user.save();
 
-        // UPDATED FOR PRODUCTION
-        return res.redirect(`https://connectmusic-app.vercel.app/dashboard?googleId=${user.googleId}`);
+        // DYNAMIC REDIRECT
+        return res.redirect(`${process.env.CLIENT_URL}/dashboard?googleId=${user.googleId}`);
 
     } catch (error) {
         console.error("Google Auth Error:", error);
-        // UPDATED FOR PRODUCTION
-        res.redirect('https://connectmusic-app.vercel.app/?error=auth_failed');
+        // DYNAMIC REDIRECT
+        res.redirect(`${process.env.CLIENT_URL}/?error=auth_failed`);
     }
 });
 

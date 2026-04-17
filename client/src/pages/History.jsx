@@ -36,7 +36,7 @@ const HistoryCard3D = ({ item, index }) => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            style={{ perspective: 1000, marginBottom: '25px' }}
+            style={{ perspective: 1000, marginBottom: '25px', width: '100%' }}
         >
             <motion.div
                 style={{ 
@@ -45,9 +45,10 @@ const HistoryCard3D = ({ item, index }) => {
                     backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '16px',
-                    padding: '25px',
+                    padding: '20px',
                     position: 'relative',
-                    cursor: 'default'
+                    cursor: 'default',
+                    width: '100%', boxSizing: 'border-box'
                 }}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
@@ -60,11 +61,11 @@ const HistoryCard3D = ({ item, index }) => {
                 />
 
                 {/* Card Content (Lifted in 3D) */}
-                <div style={{ transform: "translateZ(20px)", display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ transform: "translateZ(20px)", display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
                     
                     {/* Icon Bubble */}
                     <div style={{ 
-                        width: '50px', height: '50px', borderRadius: '50%', 
+                        width: '50px', height: '50px', borderRadius: '50%', flexShrink: 0,
                         background: isFile ? 'rgba(0, 201, 255, 0.1)' : 'rgba(255, 0, 0, 0.1)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         border: `1px solid ${isFile ? 'rgba(0, 201, 255, 0.3)' : 'rgba(255, 0, 0, 0.3)'}`
@@ -73,17 +74,17 @@ const HistoryCard3D = ({ item, index }) => {
                     </div>
 
                     {/* Text Data */}
-                    <div style={{ flexGrow: 1 }}>
-                        <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: 'bold' }}>{item.sourceName}</h3>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '12px', color: '#888' }}>
+                    <div style={{ flexGrow: 1, minWidth: '150px' }}>
+                        <h3 style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: 'bold', wordBreak: 'break-word' }}>{item.sourceName}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px', fontSize: '12px', color: '#888' }}>
                             <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><FaClock size={10} /> {new Date(item.createdAt).toLocaleDateString()}</span>
                             <span style={{ color: '#00ff88', display: 'flex', alignItems: 'center', gap: '5px' }}><FaCheckCircle size={10} /> Success</span>
                             <span>• {item.trackCount} Tracks</span>
                         </div>
                     </div>
 
-                    {/* Arrow Visual */}
-                    <div style={{ opacity: 0.3 }}>
+                    {/* Arrow Visual (Hidden on very tiny screens to save space) */}
+                    <div className="hidden sm:block" style={{ opacity: 0.3 }}>
                         <FaArrowRight size={20} />
                     </div>
                 </div>
@@ -116,40 +117,42 @@ const History = () => {
     }, []);
 
     if (loading) return (
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <h1 style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '40px' }}>Transfer History</h1>
+        <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '0 10px' }}>
+            <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '800', marginBottom: '40px' }}>Transfer History</h1>
             <SkeletonLoader count={4} />
         </div>
     );
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', minHeight: '80vh', color: 'white' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', minHeight: '80vh', color: 'white', overflowX: 'hidden' }}>
             
-            {/* Page Title */}
+            {/* Page Title Header (UPDATED FOR RESPONSIVENESS) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px' }}>
-                <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '12px' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '12px', flexShrink: 0 }}>
                     <FaHistory size={24} color="#00C9FF" />
                 </div>
-                <h1 style={{ fontSize: '3rem', fontWeight: '800', letterSpacing: '-1px' }}>Time Capsule</h1>
+                <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '800', letterSpacing: '-1px' }}>Time Capsule</h1>
             </div>
-            <p style={{ color: '#888', marginBottom: '60px', marginLeft: '65px' }}>
+            
+            {/* Description Text */}
+            <p style={{ color: '#888', marginBottom: '40px', maxWidth: '100%', wordBreak: 'break-word', paddingLeft: '55px' }}>
                 A holographic record of every playlist you've liberated.
             </p>
 
-            {/* Glowing Timeline Line */}
+            {/* Glowing Timeline Line (Adjusted position) */}
             {historyLogs.length > 0 && (
                 <div style={{ 
-                    position: 'absolute', left: '25px', top: '140px', bottom: '50px', 
+                    position: 'absolute', left: '22px', top: '120px', bottom: '50px', 
                     width: '2px', background: 'linear-gradient(to bottom, #00C9FF, #FF00E6, transparent)',
                     opacity: 0.3, zIndex: 0
                 }} />
             )}
 
             {/* List */}
-            <div style={{ position: 'relative', zIndex: 1, paddingLeft: '50px' }}>
+            <div style={{ position: 'relative', zIndex: 1, paddingLeft: '0', marginLeft: '50px' }}>
                 {historyLogs.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '60px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                        <p style={{ color: '#666', fontSize: '18px' }}>No transfers recorded yet. Run a transfer to see it here.</p>
+                    <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                        <p style={{ color: '#666', fontSize: '16px' }}>No transfers recorded yet. Run a transfer to see it here.</p>
                     </div>
                 ) : (
                     historyLogs.map((item, index) => (

@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaExchangeAlt, FaHistory, FaSignOutAlt, FaLayerGroup, FaYoutube, FaTimes } from 'react-icons/fa';
+import { 
+    FaHome, FaExchangeAlt, FaHistory, FaSignOutAlt, FaLayerGroup, 
+    FaYoutube, FaTimes, FaBars
+} from 'react-icons/fa';
 import { useMusic } from '../context/MusicContext';
-import toast from 'react-hot-toast'; // <--- 1. IMPORT TOAST
+import toast from 'react-hot-toast';
 
 // --- HELPER: GET YOUTUBE ID ---
 const getYouTubeEmbedUrl = (url) => {
@@ -28,13 +31,13 @@ const getYouTubeEmbedUrl = (url) => {
 // --- SUB-COMPONENT: 2D ANIMATED AUDIO WAVE ---
 const AudioWave = ({ isPlaying }) => {
     return (
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '24px', opacity: isPlaying ? 1 : 0.3, transition: '0.3s' }}>
-            {[1, 2, 3, 4, 5].map((i) => (
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '24px', opacity: isPlaying ? 1 : 0.3, transition: '0.3s' }}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
                 <motion.div
                     key={i}
-                    animate={{ height: isPlaying ? ['8px', '24px', '8px'] : '4px' }}
+                    animate={{ height: isPlaying ? ['6px', '24px', '6px'] : '4px' }}
                     transition={{ duration: 0.6, repeat: isPlaying ? Infinity : 0, repeatType: "reverse", ease: "easeInOut", delay: i * 0.1 }}
-                    style={{ width: '4px', background: isPlaying ? '#00ff88' : '#FF0000', borderRadius: '2px' }}
+                    style={{ width: '4px', background: isPlaying ? '#00C9FF' : '#b3b3b3', borderRadius: '2px' }}
                 />
             ))}
         </div>
@@ -45,6 +48,9 @@ const CyberLayout = ({ children }) => {
     const location = useLocation();
     const { currentTrack, isPlaying, togglePlay } = useMusic();
     const embedUrl = getYouTubeEmbedUrl(currentTrack);
+    
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const closeMenu = () => setIsMobileMenuOpen(false);
 
     const bgVariants = {
         animate: { backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'], transition: { duration: 20, repeat: Infinity, ease: "linear" } }
@@ -57,7 +63,7 @@ const CyberLayout = ({ children }) => {
         { path: '/history', icon: <FaHistory />, label: 'History' },
     ];
 
-    // --- 2. CUSTOM SIGN OUT CONFIRMATION ---
+    // --- CUSTOM SIGN OUT CONFIRMATION ---
     const handleSignOut = () => {
         toast((t) => (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', padding: '5px' }}>
@@ -85,25 +91,51 @@ const CyberLayout = ({ children }) => {
                     </button>
                 </div>
             </div>
-        ), { 
-            duration: Infinity, 
-            style: { border: '1px solid rgba(255,0,0,0.3)', background: 'rgba(20,0,0,0.9)' } 
-        });
+        ), { duration: Infinity, style: { border: '1px solid rgba(255,0,0,0.3)', background: 'rgba(20,0,0,0.9)' } });
     };
 
     return (
-        <div style={{ background: '#050505', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: 'white', display: 'flex' }}>
+        // RESTORED: Main Background Color
+        <div className="flex h-screen w-full bg-[#050505] text-white overflow-hidden font-sans relative">
             
-            {/* GLOBAL AURORA BACKGROUND */}
+            {/* RESTORED: GLOBAL AURORA BACKGROUND */}
             <motion.div 
                 variants={bgVariants} animate="animate"
-                style={{ position: 'fixed', inset: 0, zIndex: 0, opacity: 0.2, background: 'linear-gradient(-45deg, #FF0000, #4000ff, #00C9FF)', backgroundSize: '400% 400%', filter: 'blur(100px)' }}
+                style={{ position: 'fixed', inset: 0, zIndex: 0, opacity: 0.2, background: 'linear-gradient(-45deg, #FF0000, #4000ff, #00C9FF)', backgroundSize: '400% 400%', filter: 'blur(100px)', pointerEvents: 'none' }}
             />
 
-            {/* STICKY SIDEBAR */}
-            <div style={{ width: '260px', height: '100vh', position: 'sticky', top: 0, background: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(20px)', borderRight: '1px solid rgba(255, 255, 255, 0.1)', padding: '30px', display: 'flex', flexDirection: 'column', zIndex: 10 }}>
-                <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '50px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '10px', height: '10px', background: '#FF0000', borderRadius: '50%', boxShadow: '0 0 10px #FF0000' }}></div>
+            {/* MOBILE BACKDROP */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        onClick={closeMenu}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* RESTORED: GLASSMORPHISM SIDEBAR */}
+            <div className={`
+                fixed md:static top-0 left-0 h-full z-50 
+                w-[280px] md:w-[260px] flex-shrink-0
+                flex flex-col p-[30px] transition-transform duration-300 ease-in-out
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            `}
+            style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                backdropFilter: 'blur(20px)',
+                borderRight: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+                
+                <div className="md:hidden flex justify-end mb-4">
+                    <button onClick={closeMenu} className="text-gray-400 hover:text-white transition-colors">
+                        <FaTimes size={24} />
+                    </button>
+                </div>
+
+                <h1 className="text-2xl font-bold mb-12 flex items-center gap-2.5 hidden md:flex">
+                    <div className="w-2.5 h-2.5 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></div>
                     ConnectMusic
                 </h1>
 
@@ -111,10 +143,16 @@ const CyberLayout = ({ children }) => {
                     {navItems.map((item) => {
                         const isActive = location.pathname === item.path;
                         return (
-                            <Link to={item.path} key={item.path} style={{ textDecoration: 'none' }}>
+                            <Link to={item.path} key={item.path} onClick={closeMenu} style={{ textDecoration: 'none' }}>
                                 <motion.div 
                                     whileHover={{ x: 5, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', borderRadius: '12px', color: isActive ? 'white' : '#888', background: isActive ? 'rgba(255, 0, 0, 0.1)' : 'transparent', border: isActive ? '1px solid rgba(255, 0, 0, 0.2)' : '1px solid transparent', transition: '0.2s' }}
+                                    style={{ 
+                                        display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', 
+                                        borderRadius: '12px', color: isActive ? 'white' : '#888', 
+                                        background: isActive ? 'rgba(255, 0, 0, 0.1)' : 'transparent', 
+                                        border: isActive ? '1px solid rgba(255, 0, 0, 0.2)' : '1px solid transparent', 
+                                        transition: '0.2s' 
+                                    }}
                                 >
                                     <span style={{ color: isActive ? '#FF0000' : 'inherit' }}>{item.icon}</span>
                                     <span style={{ fontWeight: isActive ? 'bold' : 'normal' }}>{item.label}</span>
@@ -124,50 +162,8 @@ const CyberLayout = ({ children }) => {
                     })}
                 </nav>
 
-                {/* --- BOTTOM SIDEBAR SECTION --- */}
                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    
-                    {/* SYSTEM STATUS & 2D AUDIO WAVE */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 5px' }}>
-                        <div>
-                            <p style={{ fontSize: '10px', color: isPlaying ? '#00ff88' : '#666', fontWeight: 'bold', margin: 0, transition: '0.3s' }}>
-                                {isPlaying ? "SYSTEM: ACTIVE" : "SYSTEM: IDLE"}
-                            </p>
-                        </div>
-                        <AudioWave isPlaying={isPlaying} />
-                    </div>
-
-                    {/* NATIVE SIDEBAR PLAYER */}
-                    <AnimatePresence>
-                        {isPlaying && embedUrl && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', border: '1px solid #333' }}
-                            >
-                                <div style={{ padding: '8px 12px', background: '#111', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <FaYoutube color="#FF0000" size={12} />
-                                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#888' }}>NOW PLAYING</span>
-                                    </div>
-                                    <button onClick={togglePlay} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: 0 }}>
-                                        <FaTimes size={12} />
-                                    </button>
-                                </div>
-
-                                <div style={{ position: 'relative', paddingTop: '56.25%' }}>
-                                    <iframe 
-                                        src={embedUrl} title="Music Player" frameBorder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-                                    />
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* 3. SIGN OUT BUTTON UPDATED */}
+                    {/* SIGN OUT BUTTON */}
                     <button 
                         onClick={handleSignOut}
                         style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: 'transparent', border: '1px solid rgba(255, 60, 60, 0.3)', borderRadius: '12px', color: '#ff4d4d', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s', width: '100%' }}
@@ -179,10 +175,86 @@ const CyberLayout = ({ children }) => {
                 </div>
             </div>
 
-            {/* MAIN CONTENT AREA */}
-            <div style={{ flexGrow: 1, padding: '40px', zIndex: 10, position: 'relative', overflowY: 'auto' }}>
-                {children}
+            {/* THE MAIN COLUMN */}
+            <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
+                
+                {/* MOBILE TOP BAR */}
+                <div className="md:hidden flex-none w-full h-16 bg-[rgba(10,10,10,0.8)] backdrop-blur-md border-b border-white/10 z-40 flex items-center justify-between px-6">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></div>
+                        <span className="font-bold text-lg">ConnectMusic</span>
+                    </div>
+                    <button onClick={() => setIsMobileMenuOpen(true)} className="text-white p-2">
+                        <FaBars size={22} />
+                    </button>
+                </div>
+
+                {/* SCROLLABLE AREA */}
+                <div className={`flex-1 overflow-y-auto overflow-x-hidden relative ${isPlaying ? 'pb-[120px]' : ''}`}>
+                    <div className="p-6 md:p-[40px] max-w-7xl mx-auto w-full">
+                        {children}
+                    </div>
+                </div>
+
             </div>
+
+            {/* ========================================== */}
+            {/* THE FUNCTIONAL & HONEST BOTTOM DOCK        */}
+            {/* ========================================== */}
+            <AnimatePresence>
+                {isPlaying && embedUrl && (
+                    <motion.div
+                        initial={{ y: 120, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 120, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                        className="fixed bottom-0 left-0 w-full h-[100px] z-[100] flex items-center justify-between px-4 md:px-8"
+                        style={{
+                            background: 'rgba(15, 15, 15, 0.85)',
+                            backdropFilter: 'blur(30px)',
+                            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                            boxShadow: '0 -10px 40px rgba(0,0,0,0.5)'
+                        }}
+                    >
+                        
+                        {/* LEFT: Live YouTube Iframe */}
+                        <div className="flex items-center gap-4 w-[50%] md:w-[30%]">
+                            <div className="w-[120px] h-[68px] bg-black rounded overflow-hidden shadow-lg border border-white/10 flex-shrink-0 relative">
+                                <iframe 
+                                    src={embedUrl} title="Live Player" frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen className="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div className="hidden sm:flex flex-col justify-center">
+                                <span className="text-sm text-white font-bold tracking-wide">Live Stream</span>
+                                <span className="text-[11px] text-[#FF0000] flex items-center gap-1 font-semibold uppercase tracking-wider mt-1">
+                                    <FaYoutube size={12} /> YouTube Audio
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* CENTER: Audio Visualizer */}
+                        <div className="hidden md:flex flex-1 max-w-[40%] flex-col items-center justify-center gap-2">
+                            <AudioWave isPlaying={isPlaying} />
+                            <span className="text-[10px] text-[#888] tracking-widest uppercase mt-2">ConnectMusic Engine Active</span>
+                        </div>
+
+                        {/* RIGHT: The Massive Close Button */}
+                        <div className="flex items-center justify-end w-[50%] md:w-[30%]">
+                            <button 
+                                onClick={togglePlay}
+                                className="flex items-center justify-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-full bg-[#FF0000]/10 text-[#FF0000] hover:bg-[#FF0000] hover:text-white transition-all duration-300 font-bold border border-[#FF0000]/30 hover:border-[#FF0000]"
+                            >
+                                <FaTimes size={16} />
+                                <span className="hidden sm:inline text-sm md:text-base">Close Player</span>
+                            </button>
+                        </div>
+
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 };
